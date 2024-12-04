@@ -9,14 +9,14 @@ doThing input = let
           countXMAS [] = 0
           countXMAS [_] = 0
           countXMAS [_, _] = 0
-          countXMAS (xs: ys: zs:res) = countXMAS (ys:zs:res) + countXMASHorizontal xs ys zs
+          countXMAS (xs:res@(ys: zs:_)) = countXMAS res + countXMASHorizontal xs ys zs
 
           countXMASHorizontal :: String -> String -> String -> Word
           countXMASHorizontal [] [] [] = 0
-          countXMASHorizontal ('M':x:'M':xs) (_:'A':y:ys) ('S':z:'S':zs) = 1 + countXMASHorizontal (x:'M':xs) ('A':y:ys) (z:'S':zs)
-          countXMASHorizontal ('S':x:'M':xs) (_:'A':y:ys) ('S':z:'M':zs) = 1 + countXMASHorizontal (x:'M':xs) ('A':y:ys) (z:'M':zs)
-          countXMASHorizontal ('M':x:'S':xs) (_:'A':y:ys) ('M':z:'S':zs) = 1 + countXMASHorizontal (x:'S':xs) ('A':y:ys) (z:'S':zs)
-          countXMASHorizontal ('S':x:'S':xs) (_:'A':y:ys) ('M':z:'M':zs) = 1 + countXMASHorizontal (x:'S':xs) ('A':y:ys) (z:'M':zs)
+          countXMASHorizontal ('M':xs@(_:'M':_)) (_:ys@('A':_:_)) ('S':zs@(_:'S':_)) = 1 + countXMASHorizontal xs ys zs
+          countXMASHorizontal ('S':xs@(_:'M':_)) (_:ys@('A':_:_)) ('S':zs@(_:'M':_)) = 1 + countXMASHorizontal xs ys zs
+          countXMASHorizontal ('M':xs@(_:'S':_)) (_:ys@('A':_:_)) ('M':zs@(_:'S':_)) = 1 + countXMASHorizontal xs ys zs
+          countXMASHorizontal ('S':xs@(_:'S':_)) (_:ys@('A':_:_)) ('M':zs@(_:'M':_)) = 1 + countXMASHorizontal xs ys zs
           countXMASHorizontal (_:xs) (_:ys) (_:zs) = countXMASHorizontal xs ys zs
             
 
