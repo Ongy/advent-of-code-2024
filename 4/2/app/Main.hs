@@ -1,14 +1,10 @@
 module Main where
 
 doThing :: String -> String
-doThing input = let
-    inputLines = lines input
-    in show $ countXMAS inputLines
+doThing = show . countXMAS . lines
     where countXMAS :: [String] -> Word
-          countXMAS [] = 0
-          countXMAS [_] = 0
-          countXMAS [_, _] = 0
           countXMAS (xs:res@(ys: zs:_)) = countXMAS res + countXMASHorizontal xs ys zs
+          countXMAS _ = 0
 
           countXMASHorizontal :: String -> String -> String -> Word
           countXMASHorizontal xs@(_:xs') ys@(_:ys') zs@(_:zs') = countXMASHorizontal xs' ys' zs' + case (xs, ys, zs) of
