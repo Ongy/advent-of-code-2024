@@ -110,7 +110,7 @@ doThing input =
         Nothing -> "Couldn't get starting position :("
         Just pos ->
           let
-           in show . length . filter traceShowId . parMap rdeepseq (looped . runGame) $ startingPoints (GameStep gameIntMap LookUp pos)
+           in show . length . filter id . parMap rdeepseq (looped . runGame) $ startingPoints (GameStep gameIntMap LookUp pos)
   where
     fixPoint :: (a -> a) -> (a -> a -> Bool) -> a -> a
     fixPoint f eq = until (\y -> eq (f y) y) f
