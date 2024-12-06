@@ -7,9 +7,11 @@ module Main where
 
 import Data.Bits (Bits (shiftL), (.|.))
 import Data.IntMap (IntMap)
-import qualified Data.IntMap.Strict as Data.IntMap (elems, empty, filter, insert, insertWith, keys, lookup)
+import qualified Data.IntMap.Strict as Data.IntMap (empty, filter, insert, insertWith, keys, lookup)
 import Data.Maybe (fromJust, isJust, listToMaybe)
 import GHC.Exts (Int#, orI#)
+import Control.Parallel.Strategies (parMap, rparWith, rdeepseq)
+import Debug.Trace (traceShowId)
 
 data Direction = LookUp | LookDown | LookLeft | LookRight deriving (Show, Eq, Ord)
 
@@ -83,12 +85,22 @@ stepGame :: GameStep -> GameStep
 stepGame (GameStep m dir pos) =
   let pos1 = nextStep pos dir
       (pos2, dir2) = case Data.IntMap.lookup pos1 m of
-        -- Nothing        -> ((x, y), turnRight dir)
         -- The instructions say to leave the field, but for the fixpoint iteration this is equivalent
         Nothing -> (pos, dir)
         (Just Blocked) -> (pos, turnRight dir)
         _ -> (pos1, dir)
    in GameStep (Data.IntMap.insertWith (<>) pos2 (fieldFromDir dir2) m) dir2 pos2
+
+startingPoints :: GameStep -> [GameStep]
+startingPoints i@(GameStep im _ _) = loop i
+    where
+    loop :: GameStep -> [GameStep]
+    loop s@(GameStep m d p) = let
+        stepped@(GameStep m2 _ _) = stepGame s
+        next = nextStep p d
+        in if m2 == m then [] else case Data.IntMap.lookup (nextStep p d) m of
+        Just Unvisited ->  GameStep (Data.IntMap.insert next Blocked im) d p : startingPoints stepped
+        _ -> startingPoints stepped
 
 doThing :: String -> String
 doThing input =
@@ -98,12 +110,12 @@ doThing input =
         Nothing -> "Couldn't get starting position :("
         Just pos ->
           let
-           in show . countVisited . (\(GameStep m _ _) -> m) $ fixPoint stepGame (\(GameStep m1 _ _) (GameStep m2 _ _) -> m1 == m2) (GameStep gameIntMap LookUp pos)
+           in show . length . filter traceShowId . parMap rdeepseq (looped . runGame) $ startingPoints (GameStep gameIntMap LookUp pos)
   where
     fixPoint :: (a -> a) -> (a -> a -> Bool) -> a -> a
     fixPoint f eq = until (\y -> eq (f y) y) f
-    countVisited :: GameIntMap -> Int
-    countVisited = length . filter (\case Visited {} -> True; _ -> False) . Data.IntMap.elems
+    runGame :: GameStep -> GameStep
+    runGame = fixPoint stepGame (\(GameStep m1 _ _) (GameStep m2 _ _) -> m1 == m2)
 
 main :: IO ()
 main = getContents >>= print . doThing
