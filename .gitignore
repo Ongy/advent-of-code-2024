@@ -1,2 +1,8 @@
 dist-newstyle
 **/dist-newstyle
+
+input
+input.sample
+
+**/input
+**/input.sample
