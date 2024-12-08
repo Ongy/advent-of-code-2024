@@ -28,7 +28,7 @@ findAntis len width ((x1, y1), (x2, y2))
     yd = y1 - y2
     filterFun = takeWhile (\(x, y) -> x > 0 && y > 0 && x <= len && y <= width)
     genLeft m = (x1 + xd * m, y1 + yd * m) : genLeft (m + 1)
-    genRight m = (x1 - xd * m, y1 - yd * m) : genRight (m + 1)
+    genRight m = (x2 - xd * m, y2 - yd * m) : genRight (m + 1)
     in filterFun (genLeft 0) ++ filterFun (genRight 0)
 findAntis _ _ _ = []
 
