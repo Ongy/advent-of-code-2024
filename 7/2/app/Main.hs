@@ -1,9 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 module Main where
 
-import Data.Char (isDigit)
+import Data.Char (isDigit, isSpace)
 import GHC.Num (integerLogBase)
 
 data TestLine = TestLine {
@@ -27,13 +26,13 @@ operators = [(*), (+), flip concatOp]
 
 parseTestLine :: String -> TestLine
 parseTestLine line =
-    TestLine (read $ takeWhile isDigit line) (fmap read . words . drop 1 . dropWhile isDigit $ line )
+    TestLine (read $ takeWhile isDigit line) (fmap read . words . dropWhile (not . isSpace) $ line )
 
 buildPossibles :: Num a => [a -> a -> a] -> [a] -> [a]
 buildPossibles _ [] = []
 buildPossibles o (x:xs) = buildPossibles' [x] o xs
     where
-    buildPossibles' :: Num a=> [a] -> [a -> a -> a] -> [a] -> [a]
+    buildPossibles' :: Num a => [a] -> [a -> a -> a] -> [a] -> [a]
     buildPossibles' acc _ [] = acc
     buildPossibles' acc ops (y:ys) = let
         applications = fmap ($ y) ops
